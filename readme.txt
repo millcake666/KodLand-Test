@@ -7,4 +7,4 @@
 
 Приятной игры)
 
-PS: Ссылка на отрисованный уровень в Figma - https://www.figma.com/file/hB79JYisA7V4t5eixMxtIg/KodLand-Test2?type=design&node-id=0%3A1&mode=design&t=VQOlcXPGdpw34C82-1
+PS: Ссылка на отрисованный уровень в Figma - https://www.figma.com/file/hB79JYisA7V4t5eixMxtIg/KodLand-Test2?type=design&node-id=0%3A1&mode=design&t=NlYmBbFHb5f1ZOJX-1
