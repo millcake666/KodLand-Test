@@ -2,10 +2,12 @@ import pgzrun
 from pgzero.actor import Actor
 from pgzero.constants import mouse
 from pgzero.keyboard import keyboard
+from pgzero.loaders import sounds
 from pgzero.screen import Screen
 from pygame.surface import Surface
 from pgzero.animation import animate
 from pgzero.clock import clock
+from pgzero import music
 
 from random import choice, randint
 import os
@@ -20,6 +22,7 @@ TITLE = 'Dungeon game'  # Заголовок окна игры
 FPS = 60  # Количество кадров в секунду
 screen = Screen(Surface((WIDTH, HEIGHT)))
 data: dict
+music_after_game_flag = False
 
 # open settings saved file
 try:
@@ -60,6 +63,11 @@ try:
         menu_alien = Actor('menu/green_logo', topleft=(500, 250))
         menu_enemy = Actor('menu/red_logo', topleft=(964, 288))
         menu_spear = Actor('menu/spear_logo', topleft=(700, 320))  # x pos from 700 to 935
+
+        if music_state:
+            music.play('menu')
+        else:
+            music.play('empty')
 
         menu_background = Actor('menu/background', topleft=(0, 0))
 
@@ -471,7 +479,7 @@ try:
 
 
         def draw():
-            global mode
+            global mode, music_after_game_flag
 
             if mode == 'game':
                 screen.clear()
@@ -500,6 +508,13 @@ try:
                 exit_overgame_button.draw()
                 menu_overgame_button.draw()
 
+                if music_after_game_flag:
+                    music_after_game_flag = False
+                    if music_state:
+                        music.play('menu')
+                    else:
+                        music.play('empty')
+
             elif mode == 'loose':
                 screen.draw.text('Game OVER!', center=(WIDTH // 2, HEIGHT // 3),
                                  color='red', fontsize=120, background='black', fontname='rosencrantz_nbp.ttf')
@@ -507,20 +522,31 @@ try:
                 exit_overgame_button.draw()
                 menu_overgame_button.draw()
 
+                if music_after_game_flag:
+                    music_after_game_flag = False
+                    if music_state:
+                        music.play('menu')
+                    else:
+                        music.play('empty')
+
             elif mode == 'menu':
                 screen.clear()
                 draw_menu()
 
 
         def on_mouse_down(button, pos):
-            global door_open, alien, enemies, potions, start_menu_button, monster_menu_button, plus_menu_button, enemy_count
-            global minus_menu_button, sound_menu_button, music_menu_button, exit_menu_button, sound_state, music_state, mode
-            global data
+            global door_open, alien, enemies, potions, start_menu_button, monster_menu_button, plus_menu_button
+            global minus_menu_button, sound_menu_button, music_menu_button, exit_menu_button, sound_state, music_state
+            global data, music_after_game_flag, mode, enemy_count
 
             if button == mouse.LEFT:
                 if mode == 'loose' or mode == 'win':
                     if restart_overgame_button.collidepoint(pos):
                         mode = 'game'
+                        if music_state:
+                            music.play('game')
+                        else:
+                            music.play('empty')
 
                         alien.__init__(0, 550)
 
@@ -531,16 +557,25 @@ try:
                         potions = [Potion(x, y) for x, y in zip(potions_x, potions_y)]
 
                         door_open = False
+                        music_after_game_flag = True
 
                     if exit_overgame_button.collidepoint(pos):
                         quit(0)
 
                     if menu_overgame_button.collidepoint(pos):
                         mode = 'menu'
+                        if music_state:
+                            music.play('menu')
+                        else:
+                            music.play('empty')
 
                 if mode == 'menu':
                     if start_menu_button.collidepoint(pos):
                         mode = 'game'
+                        if music_state:
+                            music.play('game')
+                        else:
+                            music.play('empty')
 
                         alien.__init__(0, 550)
 
@@ -551,6 +586,7 @@ try:
                         potions = [Potion(x, y) for x, y in zip(potions_x, potions_y)]
 
                         door_open = False
+                        music_after_game_flag = True
 
                     if exit_menu_button.collidepoint(pos):
                         quit(0)
@@ -562,6 +598,10 @@ try:
                         file.truncate()
                     if music_menu_button[music_state].collidepoint(pos):
                         music_state = not music_state
+                        if music_state:
+                            music.play('menu')
+                        else:
+                            music.play('empty')
                         data['music_state'] = music_state
                         file.seek(0)
                         file.write(json.dumps(data))
