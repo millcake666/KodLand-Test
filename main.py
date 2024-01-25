@@ -4,6 +4,8 @@ from pgzero.constants import mouse
 from pgzero.keyboard import keyboard
 from pgzero.screen import Screen
 from pygame.surface import Surface
+from pgzero.animation import animate
+from pgzero.clock import clock
 
 from random import choice, randint
 import os
@@ -441,6 +443,8 @@ try:
 
             start_menu_button.draw()
             monster_menu_button.draw()
+            screen.draw.text(str(enemy_count), topleft=(282, 309), fontname='rosencrantz_nbp.ttf',
+                             fontsize=40, color='white')
             plus_menu_button.draw()
             minus_menu_button.draw()
             sound_menu_button[sound_state].draw()
@@ -450,6 +454,20 @@ try:
             menu_alien.draw()
             menu_enemy.draw()
             menu_spear.draw()
+
+
+        def animate_menu_spear_home():
+            if mode == 'menu':
+                menu_spear.x = 700
+
+
+        def animate_menu_spear_end():
+            if mode == 'menu':
+                animate(menu_spear, x=935, tween='accelerate', duration=1)
+
+
+        clock.schedule_interval(animate_menu_spear_end, 2)
+        clock.schedule_interval(animate_menu_spear_home, 2)
 
 
         def draw():
@@ -523,6 +541,17 @@ try:
                 if mode == 'menu':
                     if start_menu_button.collidepoint(pos):
                         mode = 'game'
+
+                        alien.__init__(0, 550)
+
+                        enemies.clear()
+                        for _ in range(enemy_count):
+                            create_new_enemy()
+
+                        potions = [Potion(x, y) for x, y in zip(potions_x, potions_y)]
+
+                        door_open = False
+
                     if exit_menu_button.collidepoint(pos):
                         quit(0)
                     if sound_menu_button[sound_state].collidepoint(pos):
@@ -572,6 +601,11 @@ try:
                 for spear in spears:
                     spear.update()
 
+                while len(enemies) < enemy_count:
+                    create_new_enemy()
+                while len(enemies) > enemy_count:
+                    enemies.pop(-1)
+
                 for i, enemy in enumerate(enemies):
                     enemy.update(dt)
                     if enemy.collidelist(spears) != -1:
@@ -587,7 +621,6 @@ try:
 
                 if alien.collidelist(enemies) != -1:
                     mode = 'loose'
-
 
         pgzrun.go()
 
