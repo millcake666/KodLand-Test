@@ -22,7 +22,8 @@ TITLE = 'Dungeon game'  # Заголовок окна игры
 FPS = 60  # Количество кадров в секунду
 screen = Screen(Surface((WIDTH, HEIGHT)))
 data: dict
-music_after_game_flag = False
+music_after_game_flag = True
+sound_door_open_flag = True
 
 # open settings saved file
 try:
@@ -173,6 +174,8 @@ try:
                 global potions
                 collide = self.collidelist(potions)
                 if collide != -1:
+                    if sound_state:
+                        sounds.potion.play()
                     potions.pop(collide)
 
             def animate(self, dt):
@@ -547,6 +550,8 @@ try:
                             music.play('game')
                         else:
                             music.play('empty')
+                        if sound_state:
+                            sounds.button.play()
 
                         alien.__init__(0, 550)
 
@@ -560,6 +565,8 @@ try:
                         music_after_game_flag = True
 
                     if exit_overgame_button.collidepoint(pos):
+                        if sound_state:
+                            sounds.button.play()
                         quit(0)
 
                     if menu_overgame_button.collidepoint(pos):
@@ -568,6 +575,8 @@ try:
                             music.play('menu')
                         else:
                             music.play('empty')
+                        if sound_state:
+                            sounds.button.play()
 
                 if mode == 'menu':
                     if start_menu_button.collidepoint(pos):
@@ -576,6 +585,8 @@ try:
                             music.play('game')
                         else:
                             music.play('empty')
+                        if sound_state:
+                            sounds.button.play()
 
                         alien.__init__(0, 550)
 
@@ -589,10 +600,14 @@ try:
                         music_after_game_flag = True
 
                     if exit_menu_button.collidepoint(pos):
+                        if sound_state:
+                            sounds.button.play()
                         quit(0)
                     if sound_menu_button[sound_state].collidepoint(pos):
                         sound_state = not sound_state
                         data['sound_state'] = sound_state
+                        if sound_state:
+                            sounds.button.play()
                         file.seek(0)
                         file.write(json.dumps(data))
                         file.truncate()
@@ -602,11 +617,15 @@ try:
                             music.play('menu')
                         else:
                             music.play('empty')
+                        if sound_state:
+                            sounds.button.play()
                         data['music_state'] = music_state
                         file.seek(0)
                         file.write(json.dumps(data))
                         file.truncate()
                     if plus_menu_button.collidepoint(pos):
+                        if sound_state:
+                            sounds.button.play()
                         if enemy_count < 9:
                             enemy_count += 1
                             data['enemy_count'] = enemy_count
@@ -614,6 +633,8 @@ try:
                             file.write(json.dumps(data))
                             file.truncate()
                     if minus_menu_button.collidepoint(pos):
+                        if sound_state:
+                            sounds.button.play()
                         if enemy_count > 0:
                             enemy_count -= 1
                             data['enemy_count'] = enemy_count
@@ -624,17 +645,25 @@ try:
 
         def on_key_down(key):
             if key == keys.W:
+                if sound_state:
+                    sounds.hit.play()
                 spears.append(Spear('up', alien.x - alien.width / 4, alien.y - alien.height / 2))
             if key == keys.S:
+                if sound_state:
+                    sounds.hit.play()
                 spears.append(Spear('down', alien.x - alien.width / 4, alien.y - alien.height / 2))
             if key == keys.A:
+                if sound_state:
+                    sounds.hit.play()
                 spears.append(Spear('left', alien.x - alien.width / 2, alien.y - alien.height / 2))
             if key == keys.D:
+                if sound_state:
+                    sounds.hit.play()
                 spears.append(Spear('right', alien.x - alien.width / 2, alien.y - alien.height / 2))
 
 
         def update(dt):
-            global mode, door_open, alien, potions
+            global mode, door_open, alien, potions, sound_door_open_flag
 
             if mode == 'game':
                 alien.update(dt)
@@ -649,10 +678,16 @@ try:
                 for i, enemy in enumerate(enemies):
                     enemy.update(dt)
                     if enemy.collidelist(spears) != -1:
+                        if sound_state:
+                            sounds.enemy_dead.play()
                         enemies.pop(i)
                         create_new_enemy()
 
                 if len(potions) == 0:
+                    if sound_door_open_flag:
+                        sound_door_open_flag = False
+                        if sound_state:
+                            sounds.door_open.play()
                     door_open = True
 
                 if door_open:
