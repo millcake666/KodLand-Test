@@ -6,12 +6,12 @@ from pgzero.loaders import sounds
 from pgzero.screen import Screen
 from pygame.surface import Surface
 from pgzero.animation import animate
-from pgzero.clock import clock
 from pgzero import music
 
 from random import choice, randint
 import os
 import json
+from time import perf_counter
 
 from actor_blocks import items
 
@@ -24,6 +24,7 @@ screen = Screen(Surface((WIDTH, HEIGHT)))
 data: dict
 music_after_game_flag = True
 sound_door_open_flag = True
+spear_menu_timer = perf_counter() - 2
 
 # open settings saved file
 try:
@@ -63,7 +64,7 @@ try:
         # menu animated logo
         menu_alien = Actor('menu/green_logo', topleft=(500, 250))
         menu_enemy = Actor('menu/red_logo', topleft=(964, 288))
-        menu_spear = Actor('menu/spear_logo', topleft=(700, 320))  # x pos from 700 to 935
+        menu_spear = Actor('menu/spear_logo', topleft=(620, 320))
 
         if music_state:
             music.play('menu')
@@ -467,22 +468,13 @@ try:
             menu_spear.draw()
 
 
-        def animate_menu_spear_home():
-            if mode == 'menu':
-                menu_spear.x = 700
-
-
-        def animate_menu_spear_end():
-            if mode == 'menu':
-                animate(menu_spear, x=935, tween='accelerate', duration=1)
-
-
-        clock.schedule_interval(animate_menu_spear_end, 2)
-        clock.schedule_interval(animate_menu_spear_home, 2)
+        def animate_menu_spear():
+            menu_spear.x = 620 + menu_spear.width // 2
+            animate(menu_spear, x=935, tween='accelerate', duration=0.5)
 
 
         def draw():
-            global mode, music_after_game_flag
+            global mode, music_after_game_flag, spear_menu_timer
 
             if mode == 'game':
                 screen.clear()
@@ -535,6 +527,10 @@ try:
             elif mode == 'menu':
                 screen.clear()
                 draw_menu()
+
+                if perf_counter() - spear_menu_timer > 2:
+                    spear_menu_timer = perf_counter()
+                    animate_menu_spear()
 
 
         def on_mouse_down(button, pos):
